@@ -39,6 +39,7 @@ import com.github.unidbg.thread.ThreadContextSwitchException;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.utils.Inspector;
+import com.github.unidbg.zz.ZZConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -1223,7 +1224,24 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         RegisterContext context = emulator.getContext();
         int clk_id = context.getIntArg(0) & 0x7;
         Pointer tp = context.getPointerArg(1);
-        long offset = clk_id == CLOCK_REALTIME ? currentTimeMillis() * 1000000L : System.nanoTime() - nanoTime;
+
+
+        //通过开关固定时间戳
+        long currentTimeMillis = 0;
+        if(ZZConfig.fix_clock_gettime) {
+            currentTimeMillis = ZZConfig.curTime;
+        } else {
+            currentTimeMillis = System.currentTimeMillis();
+        }
+
+        long nanoTimeDiff = 0;
+        if(ZZConfig.fix_clock_gettime) {
+            nanoTimeDiff = 349876950504300L - 349787032319900L;
+        } else {
+            nanoTimeDiff = System.nanoTime() - nanoTime;
+        }
+
+        long offset = clk_id == CLOCK_REALTIME ? currentTimeMillis * 1000000L : nanoTimeDiff;
         long tv_sec = offset / 1000000000L;
         long tv_nsec = offset % 1000000000L;
         if (log.isDebugEnabled()) {

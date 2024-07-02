@@ -3,6 +3,7 @@ package com.github.unidbg.linux.file;
 import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.file.linux.IOConstants;
+import com.github.unidbg.zz.ZZConfig;
 import com.sun.jna.Pointer;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -29,6 +30,12 @@ public class RandomFileIO extends DriverFileIO {
     }
 
     protected void randBytes(byte[] bytes) {
-        ThreadLocalRandom.current().nextBytes(bytes);
+
+        //通过开关固定时间戳
+        if(ZZConfig.fix_ramdom_file) {
+            //啥也不做，那么返回的字节数组元素就会默认全 0。
+        } else {
+            ThreadLocalRandom.current().nextBytes(bytes);
+        }
     }
 }

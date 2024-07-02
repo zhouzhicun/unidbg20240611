@@ -11,6 +11,7 @@ import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.file.linux.StatStructure;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.utils.Inspector;
+import com.github.unidbg.zz.ZZConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -131,7 +132,15 @@ public class SimpleFileIO extends BaseAndroidFileIO implements NewFileIO {
         stat.st_blksize = emulator.getPageAlign();
         stat.st_ino = 1;
         stat.st_blocks = ((file.length() + emulator.getPageAlign() - 1) / emulator.getPageAlign());
-        stat.setLastModification(file.lastModified());
+
+        //通过开关固定时间戳
+        if(ZZConfig.fix_file_timestamp) {
+           long timestamp = ZZConfig.curTime;
+            stat.setLastModification(timestamp);
+        } else {
+            stat.setLastModification(file.lastModified());
+        }
+
         stat.pack();
         return 0;
     }
