@@ -1,13 +1,18 @@
 package zz.app.template;
 
 import com.github.unidbg.AndroidEmulator;
+import com.github.unidbg.Emulator;
 import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.file.IOResolver;
+import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.dvm.*;
+import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
 import com.github.unidbg.memory.Memory;
+import com.github.unidbg.pointer.UnidbgPointer;
+
 import java.io.File;
 
 import java.util.ArrayList;
@@ -24,7 +29,7 @@ public class BaseAbstractJni extends AbstractJni {
 
     /******************************* build ****************************************/
 
-    public void build(AppInfo appInfo, IOResolver resolver) {
+    public void build(AppInfo appInfo, List<IOResolver<AndroidFileIO> > resolvers) {
 
         //1.創建emulator
         AndroidEmulatorBuilder builder = null;
@@ -34,12 +39,12 @@ public class BaseAbstractJni extends AbstractJni {
             builder = AndroidEmulatorBuilder.for32Bit();
         }
 
-        build(appInfo, resolver, builder);
+        build(appInfo, resolvers, builder);
 
     }
 
     //arm64: ARM64SyscallHandler, arm32: ARM32SyscallHandler
-    public void build(AppInfo appInfo, IOResolver resolver, AndroidEmulatorBuilder builder) {
+    public void build(AppInfo appInfo, List<IOResolver<AndroidFileIO>> resolvers, AndroidEmulatorBuilder builder) {
 
         this.appInfo = appInfo;
 
@@ -47,9 +52,11 @@ public class BaseAbstractJni extends AbstractJni {
                 .setProcessName(appInfo.bundleName)
                 .build();
 
-        //IO补环境
-        if(resolver != null) {
-            emulator.getSyscallHandler().addIOResolver(resolver);
+        //IO补环境, 支持多个resolver, 且后添加的优先级更高。
+        if(resolvers != null && !resolvers.isEmpty()) {
+            for (IOResolver<AndroidFileIO> resolver : resolvers) {
+                emulator.getSyscallHandler().addIOResolver(resolver);
+            }
         }
 
         commonBuild();
@@ -116,6 +123,41 @@ public class BaseAbstractJni extends AbstractJni {
         List<Object> resultParams = createParams();
         if(params != null && !params.isEmpty()) {
             resultParams.addAll(params);
+        }
+        return module.callFunction(emulator, offset, resultParams.toArray());
+    }
+
+
+
+    public Number callJNIFuncV2(long offset, List<Object> params) {
+
+        List<Object> resultParams = createParams();
+        if(params != null && !params.isEmpty()) {
+            for (Object param : params) {
+                if (param instanceof Boolean) {
+                    resultParams.add((Boolean) param ? VM.JNI_TRUE : VM.JNI_FALSE);
+                    continue;
+                } else if (param instanceof String ||
+                        param instanceof byte[] ||
+                        param instanceof short[] ||
+                        param instanceof int[] ||
+                        param instanceof float[] ||
+                        param instanceof double[] ||
+                        param instanceof Enum) {
+                    DvmObject<?> obj = ProxyDvmObject.createObject(vm, param);
+                    resultParams.add(obj.hashCode());
+                    vm.addLocalObject(obj);
+                    continue;
+                } else if(param instanceof Hashable) {
+
+                    resultParams.add(param.hashCode()); // dvm object
+                    if(param instanceof DvmObject) {
+                        vm.addLocalObject((DvmObject<?>) param);
+                    }
+                    continue;
+                }
+                resultParams.add(param);
+            }
         }
         return module.callFunction(emulator, offset, resultParams.toArray());
     }

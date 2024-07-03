@@ -13,4 +13,5 @@ public class ZZConfig {
     public static boolean fix_ramdom_file = true;
     public static boolean fix_getramdom = true;
     public static boolean fix_processid = true;
+
 }

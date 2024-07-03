@@ -49,14 +49,22 @@ public class zuiyou extends BaseAbstractJni {
 
     public String call_sign(){
 
-        StringObject param1 = new StringObject(vm, "123456");
-        ByteArray param2 = new ByteArray(vm, "hello".getBytes(StandardCharsets.UTF_8));
-
         List<Object> params = new ArrayList<>(10);
-        params.add(vm.addLocalObject(param1));
-        params.add(vm.addLocalObject(param2));
 
-        Number signHash = callJNIFunc(0x4a28d, params);
+        //调用callJNIFunc
+//        StringObject param1 = new StringObject(vm, "123456");
+//        ByteArray param2 = new ByteArray(vm, "hello".getBytes(StandardCharsets.UTF_8));
+//        params.add(vm.addLocalObject(param1));
+//        params.add(vm.addLocalObject(param2));
+
+
+        //调用callJNIFuncV2
+        String param1 = "123456";
+        byte[] param2 = param1.getBytes(StandardCharsets.UTF_8);
+        params.add(param1);
+        params.add(param2);
+
+        Number signHash = callJNIFuncV2(0x4a28d, params);
         return vm.getObject(signHash.intValue()).getValue().toString();
     }
 

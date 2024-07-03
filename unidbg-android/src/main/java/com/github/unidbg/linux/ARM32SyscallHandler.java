@@ -41,6 +41,7 @@ import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.utils.Inspector;
 import com.github.unidbg.zz.ZZConfig;
+import com.github.unidbg.zz.ZZUnameConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -1603,25 +1604,25 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
 
         final int SYS_NMLN = 65;
 
-        Pointer sysname = buf.share(0);
-        sysname.setString(0, "Linux");
+         Pointer sysName = buf.share(0);
+         sysName.setString(0, ZZUnameConfig.sysname); /* Operating system name (e.g., "Linux") */
 
-        Pointer nodename = sysname.share(SYS_NMLN);
-        nodename.setString(0, "localhost");
+         Pointer nodeName = sysName.share(SYS_NMLN);
+         nodeName.setString(0, ZZUnameConfig.nodename); /* Name within "some implementation-defined network" */
 
-        Pointer release = nodename.share(SYS_NMLN);
-        release.setString(0, "1.0.0-unidbg");
+         Pointer release = nodeName.share(SYS_NMLN);
+         release.setString(0, ZZUnameConfig.release); /* Operating system release (e.g., "2.6.28") */
 
-        Pointer version = release.share(SYS_NMLN);
-        version.setString(0, "#1 SMP PREEMPT Thu Apr 19 14:36:58 CST 2018");
+         Pointer version = release.share(SYS_NMLN);
+         version.setString(0, ZZUnameConfig.version); /* Operating system version */
 
-        Pointer machine = version.share(SYS_NMLN);
-        machine.setString(0, "armv7l");
+         Pointer machine = version.share(SYS_NMLN);
+         machine.setString(0, ZZUnameConfig.machineArm32); /* Hardware identifier */
 
-        Pointer domainname = machine.share(SYS_NMLN);
-        domainname.setString(0, "localdomain");
+         Pointer domainName = machine.share(SYS_NMLN);
+         domainName.setString(0, ZZUnameConfig.domainname); /* NIS or YP domain name */
 
-        return 0;
+         return 0;
     }
 
     private void exit_group(Emulator<?> emulator) {
