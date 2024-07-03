@@ -14,7 +14,9 @@ import zz.app.template.BaseAbstractJni;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class zuiyou extends BaseAbstractJni {
@@ -23,10 +25,11 @@ public class zuiyou extends BaseAbstractJni {
 
         //1.App常量
         String bundleName = "com.xiaochuankeji.tieba";
+        String rootfs = "zuiyou/rootfs";
         String apkPath =  "zuiyou/zuiyou.apk";
         String soName = "libnet_crypto.so";
         String clsName = "com/sina/weibo/security/WeiboSecurityUtils";
-        AppInfo appInfo = new AppInfo(false, bundleName, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, apkPath, soName, clsName);
 
         build(appInfo, null);
 
@@ -57,12 +60,16 @@ public class zuiyou extends BaseAbstractJni {
 //        params.add(vm.addLocalObject(param1));
 //        params.add(vm.addLocalObject(param2));
 
-
         //调用callJNIFuncV2
         String param1 = "123456";
         byte[] param2 = param1.getBytes(StandardCharsets.UTF_8);
         params.add(param1);
         params.add(param2);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("one", "111");
+        map.put("two", "222");
+        params.add(map);
 
         Number signHash = callJNIFuncV2(0x4a28d, params);
         return vm.getObject(signHash.intValue()).getValue().toString();

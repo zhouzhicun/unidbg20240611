@@ -50,6 +50,7 @@ public class BaseAbstractJni extends AbstractJni {
 
         emulator = builder.addBackendFactory(new Unicorn2Factory(true))
                 .setProcessName(appInfo.bundleName)
+                .setRootDir(new File(appInfo.rootfs))
                 .build();
 
         //IO补环境, 支持多个resolver, 且后添加的优先级更高。
@@ -81,7 +82,7 @@ public class BaseAbstractJni extends AbstractJni {
 //        return builder;
 //    }
 
-
+    public void loadOtherLibrary() {}
 
     public void commonBuild() {
 
@@ -98,12 +99,17 @@ public class BaseAbstractJni extends AbstractJni {
         vm.setJni(this);
         vm.setVerbose(true);
 
+        //5.1 加載其他so， 例如虚拟module，相关lib。
+        loadOtherLibrary();
+
         //6.獲取class
         DalvikModule dm = vm.loadLibrary(appInfo.soName, true);
         module = dm.getModule();
         dm.callJNI_OnLoad(emulator);
         nativeAPI = vm.resolveClass(appInfo.clsName);
     }
+
+
 
 
 
@@ -136,7 +142,6 @@ public class BaseAbstractJni extends AbstractJni {
             for (Object param : params) {
                 if (param instanceof Boolean) {
                     resultParams.add((Boolean) param ? VM.JNI_TRUE : VM.JNI_FALSE);
-                    continue;
                 } else if (param instanceof String ||
                         param instanceof byte[] ||
                         param instanceof short[] ||
@@ -147,16 +152,13 @@ public class BaseAbstractJni extends AbstractJni {
                     DvmObject<?> obj = ProxyDvmObject.createObject(vm, param);
                     resultParams.add(obj.hashCode());
                     vm.addLocalObject(obj);
-                    continue;
-                } else if(param instanceof Hashable) {
 
-                    resultParams.add(param.hashCode()); // dvm object
-                    if(param instanceof DvmObject) {
-                        vm.addLocalObject((DvmObject<?>) param);
-                    }
-                    continue;
+                } else {
+                    System.err.println("参数类型不支持，请完善 callJNIFuncV2 方法");
+                    System.err.println("param = " + param.toString());
+                    return null;
                 }
-                resultParams.add(param);
+
             }
         }
         return module.callFunction(emulator, offset, resultParams.toArray());
