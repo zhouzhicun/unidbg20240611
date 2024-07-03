@@ -1,17 +1,13 @@
 package zz.app.zuiyou;
 
-import com.github.unidbg.AndroidEmulator;
-import com.github.unidbg.Module;
-import com.github.unidbg.arm.backend.Unicorn2Factory;
-import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
-import com.github.unidbg.linux.android.AndroidResolver;
+import com.github.unidbg.linux.ARM32SyscallHandler;
+import com.github.unidbg.linux.AndroidSyscallHandler;
 import com.github.unidbg.linux.android.dvm.*;
-import com.github.unidbg.linux.android.dvm.array.ByteArray;
-import com.github.unidbg.memory.Memory;
-import zz.app.template.AppInfo;
-import zz.app.template.BaseAbstractJni;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import zz.app.base.AppInfo;
+import zz.app.base.BaseAbstractJni;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,13 +19,16 @@ public class zuiyou extends BaseAbstractJni {
 
     zuiyou() {
 
+        addVirtualModule = true;
+
         //1.App常量
         String bundleName = "com.xiaochuankeji.tieba";
         String rootfs = "zuiyou/rootfs";
+        String rootresource = "zuiyou/resource";
         String apkPath =  "zuiyou/zuiyou.apk";
         String soName = "libnet_crypto.so";
-        String clsName = "com/sina/weibo/security/WeiboSecurityUtils";
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, apkPath, soName, clsName);
+        String clsName = "com.sina.weibo.security.WeiboSecurityUtils";   //支持.或者 / 分隔。
+        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
 
         build(appInfo, null);
 
@@ -39,6 +38,12 @@ public class zuiyou extends BaseAbstractJni {
     /************************************ 函数调用 *************************************/
 
     public static void main(String[] args) throws Exception {
+
+        //添加日志
+        Logger.getLogger(ARM32SyscallHandler.class).setLevel(Level.DEBUG);
+        Logger.getLogger(AndroidSyscallHandler.class).setLevel(Level.DEBUG);
+
+
         zuiyou test = new zuiyou();
         test.call_init();
         String sign = test.call_sign();

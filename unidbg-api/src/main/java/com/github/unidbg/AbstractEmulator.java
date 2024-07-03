@@ -422,6 +422,7 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
                 msg = e.getClass().getName();
             }
             RunnableTask runningTask = threadDispatcher.getRunningTask();
+            System.err.println("待补环境 ==> " + msg);
             log.warn("emulate {} exception sp={}, msg={}, offset={}ms{}", pointer, getStackPointer(), msg, System.currentTimeMillis() - start,
                     runningTask == null ? "" : (" @ " + runningTask));
         }

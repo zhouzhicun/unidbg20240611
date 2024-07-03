@@ -1,8 +1,8 @@
 package zz.app.lvzhou;
 
 import com.github.unidbg.linux.android.dvm.array.ByteArray;
-import zz.app.template.AppInfo;
-import zz.app.template.BaseAbstractJni;
+import zz.app.base.AppInfo;
+import zz.app.base.BaseAbstractJni;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,11 +16,12 @@ public class lvzhou extends BaseAbstractJni {
         //1.App常量
         String bundleName = "com.sina.oasis";
         String rootfs = "lvzhou/rootfs";
+        String rootresource = "lvzhou/resource";
         String apkPath =  "lvzhou/lvzhou.apk";
         String soName = "oasiscore";
         String clsName = "com/sina/weibo/security/WeiboSecurityUtils";
 
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
         build(appInfo, null);
 
     }

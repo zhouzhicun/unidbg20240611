@@ -1,17 +1,18 @@
-package zz.app.template;
+package zz.app.base;
 
 public class AppInfo {
 
     public boolean is64Bit = true;
     public String bundleName;
     public String rootfs;
+    public String rootsource;
     public String apkPath;
     public String soName;
     public String clsName;
 
     private String apkBasePath = "unidbg-android/src/test/java/zz/app/";
 
-    public AppInfo(boolean is64Bit, String bundleName, String rootfs, String apkPath, String soName, String clsName) {
+    public AppInfo(boolean is64Bit, String bundleName, String rootfs, String rootsource, String apkPath, String soName, String clsName) {
         this.is64Bit = is64Bit;
         this.bundleName = bundleName;
 
@@ -20,6 +21,13 @@ public class AppInfo {
         } else {
             this.rootfs = null;
         }
+
+        if(rootsource != null && !rootsource.isEmpty()) {
+            this.rootsource = apkBasePath + rootsource;
+        } else {
+            this.rootsource = null;
+        }
+
 
         this.apkPath = apkBasePath + apkPath;
 

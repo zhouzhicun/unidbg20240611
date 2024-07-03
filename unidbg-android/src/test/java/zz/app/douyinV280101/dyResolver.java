@@ -8,7 +8,7 @@ import com.github.unidbg.file.linux.AndroidFileIO;
 public class dyResolver implements IOResolver<AndroidFileIO> {
 
     @Override
-    public FileResult resolve(Emulator emulator, String pathname, int oflags) {
+    public FileResult<AndroidFileIO> resolve(Emulator<AndroidFileIO> emulator, String pathname, int oflags) {
         System.out.println("File open: " + pathname);
         return null;
     }
