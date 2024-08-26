@@ -1,6 +1,7 @@
 package zz.app.base;
 
 import com.github.unidbg.AndroidEmulator;
+import com.github.unidbg.Emulator;
 import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.file.IOResolver;
@@ -8,6 +9,7 @@ import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.SystemPropertyHook;
+import com.github.unidbg.linux.android.SystemPropertyProvider;
 import com.github.unidbg.linux.android.dvm.*;
 import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
 import com.github.unidbg.memory.Memory;
@@ -18,13 +20,10 @@ import com.github.unidbg.virtualmodule.android.MediaNdkModule;
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class BaseAbstractJni extends AbstractJni {
-
-    protected boolean addVirtualModule = false;
-    protected boolean addSystemPropertyHook = false;
-    protected boolean addProcFileResolver = false;
 
     protected AppInfo appInfo;
     protected AndroidEmulator emulator;
@@ -34,37 +33,28 @@ public class BaseAbstractJni extends AbstractJni {
 
     /******************************* build ****************************************/
 
-    public void build(AppInfo appInfo, List<IOResolver<AndroidFileIO> > resolvers) {
 
-        //1.創建emulator
-        AndroidEmulatorBuilder builder = null;
-        if (appInfo.is64Bit) {
-            builder = AndroidEmulatorBuilder.for64Bit();
-        } else {
-            builder = AndroidEmulatorBuilder.for32Bit();
-        }
-
-        build(appInfo, resolvers, builder);
-
-    }
-
-    //arm64: ARM64SyscallHandler, arm32: ARM32SyscallHandler
-    public void build(AppInfo appInfo, List<IOResolver<AndroidFileIO>> resolvers, AndroidEmulatorBuilder builder) {
+    public void build(AppInfo appInfo, AndroidEmulatorBuilder builder) {
 
         this.appInfo = appInfo;
+
+        //判断是否有传入builder，没有则創建builder
+        if(builder == null) {
+            if (appInfo.is64Bit) {
+                builder = AndroidEmulatorBuilder.for64Bit();
+            } else {
+                builder = AndroidEmulatorBuilder.for32Bit();
+            }
+        }
 
         emulator = builder.addBackendFactory(new Unicorn2Factory(true))
                 .setProcessName(appInfo.bundleName)
                 .setRootDir(new File(appInfo.rootfs))
                 .build();
 
-        if (addProcFileResolver) {
-            emulator.getSyscallHandler().addIOResolver(new ProcFileResolver(appInfo.rootsource));
-        }
-
         //IO补环境, 支持多个resolver, 且后添加的优先级更高。
-        if(resolvers != null && !resolvers.isEmpty()) {
-            for (IOResolver<AndroidFileIO> resolver : resolvers) {
+        if(appInfo.ioResolvers != null && !appInfo.ioResolvers.isEmpty()) {
+            for (IOResolver<AndroidFileIO> resolver : appInfo.ioResolvers) {
                 emulator.getSyscallHandler().addIOResolver(resolver);
             }
         }
@@ -72,24 +62,6 @@ public class BaseAbstractJni extends AbstractJni {
         commonBuild();
 
     }
-
-//    public AndroidEmulatorBuilder createCustomBuilder() {
-//
-//        AndroidEmulatorBuilder builder = null;
-//        builder = new AndroidEmulatorBuilder(true){
-//            @Override
-//            public AndroidEmulator build() {
-//                return new AndroidARMEmulator(processName,rootDir,backendFactories) {
-//                    @Override
-//                    protected UnixSyscallHandler<AndroidFileIO> createSyscallHandler(SvcMemory svcMemory) {
-//                        return new DemoARM64SyscallHandler(svcMemory);
-//                    }
-//                };
-//            }
-//        };
-//
-//        return builder;
-//    }
 
 
     public void commonBuild() {
@@ -107,16 +79,8 @@ public class BaseAbstractJni extends AbstractJni {
         vm.setJni(this);
         vm.setVerbose(true);
 
-        //添加sysPropertyHook
-        if(addSystemPropertyHook) {
-            SystemPropertyHook propertyHook = Utils.createSystemPropertyHook(emulator);
-            memory.addHookListener(propertyHook);
-        }
-
-        //加載虚拟module
-        if (addVirtualModule) {
-            loadVirtualLibrary();
-        }
+        //预加載Library
+        preLoadLibrary();
 
         //6.獲取class
         DalvikModule dm = vm.loadLibrary(appInfo.soName, true);
@@ -125,16 +89,44 @@ public class BaseAbstractJni extends AbstractJni {
         nativeAPI = vm.resolveClass(appInfo.clsName);
     }
 
-    private void loadVirtualLibrary() {
-        //加载虚拟module
+    private void preLoadLibrary() {
+
         Memory memory = emulator.getMemory();
-        new AndroidModule(emulator, vm).register(memory);
-        new JniGraphics(emulator, vm).register(memory);
-        new MediaNdkModule(emulator, vm).register(memory);
+
+        //添加sysPropertyHook
+        if (appInfo.systemProperties != null) {
+            SystemPropertyHook propertyHook = createSystemPropertyHook(emulator);
+            memory.addHookListener(propertyHook);
+        }
+
+
+        //1.预加载virtualModule
+        if (appInfo.virtualLibrarys != null) {
+            for (AppInfo.VirtualModuleName moduleName: appInfo.virtualLibrarys) {
+                switch (moduleName) {
+                    case AndroidModule: {
+                        new AndroidModule(emulator, vm).register(memory);
+                        break;
+                    }
+                   case JniGraphics: {
+                       new JniGraphics(emulator, vm).register(memory);
+                       break;
+                   }
+                   case MediaNdkModule: {
+                       new MediaNdkModule(emulator, vm).register(memory);
+                       break;
+                   }
+                }
+            }
+        }
+
+        //2.预加载依赖library
+        if(appInfo.dependLibrarys != null) {
+            for (String libName : appInfo.dependLibrarys) {
+                vm.loadLibrary(libName, true);
+            }
+        }
     }
-
-
-
 
 
     /******************************* helper ****************************************/
@@ -183,4 +175,22 @@ public class BaseAbstractJni extends AbstractJni {
         return module.callFunction(emulator, offset, resultParams.toArray());
     }
 
+
+    //創建systemPropertyHook
+    private SystemPropertyHook createSystemPropertyHook(Emulator<?> emulator) {
+
+        SystemPropertyHook systemPropertyHook = new SystemPropertyHook(emulator);
+        systemPropertyHook.setPropertyProvider(new SystemPropertyProvider() {
+            @Override
+            public String getProperty(String key) {
+                System.err.println("zz getSystemProperty ==> key:" + key);
+                if (appInfo.systemProperties.containsKey(key)) {
+                    return appInfo.systemProperties.get(key);
+                }
+                return "";
+            }
+        });
+
+        return systemPropertyHook;
+    }
 }

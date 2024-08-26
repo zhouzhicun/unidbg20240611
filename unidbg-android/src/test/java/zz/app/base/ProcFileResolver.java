@@ -9,6 +9,8 @@ import com.github.unidbg.linux.file.SimpleFileIO;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** proc文件
@@ -64,6 +66,7 @@ class AccessProcFN {
 
     public static final String proc_pid_status = "/proc/%d/status";
 }
+
 
 
 

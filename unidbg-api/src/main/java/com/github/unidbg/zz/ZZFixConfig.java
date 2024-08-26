@@ -1,6 +1,6 @@
 package com.github.unidbg.zz;
 
-public class ZZConfig {
+public class ZZFixConfig {
 
     //固定值
     public static long curTime = 1719919836983L;

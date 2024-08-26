@@ -39,7 +39,7 @@ import com.github.unidbg.thread.ThreadContextSwitchException;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.utils.Inspector;
-import com.github.unidbg.zz.ZZConfig;
+import com.github.unidbg.zz.ZZFixConfig;
 import com.github.unidbg.zz.ZZUnameConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.io.FilenameUtils;
@@ -1229,14 +1229,14 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
 
         //通过开关固定时间戳
         long currentTimeMillis = 0;
-        if(ZZConfig.fix_clock_gettime) {
-            currentTimeMillis = ZZConfig.curTime;
+        if(ZZFixConfig.fix_clock_gettime) {
+            currentTimeMillis = ZZFixConfig.curTime;
         } else {
             currentTimeMillis = System.currentTimeMillis();
         }
 
         long nanoTimeDiff = 0;
-        if(ZZConfig.fix_clock_gettime) {
+        if(ZZFixConfig.fix_clock_gettime) {
             nanoTimeDiff = 349876950504300L - 349787032319900L;
         } else {
             nanoTimeDiff = System.nanoTime() - nanoTime;

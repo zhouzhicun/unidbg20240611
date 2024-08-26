@@ -18,9 +18,7 @@ import java.util.Map;
 public class zuiyou extends BaseAbstractJni {
 
     zuiyou() {
-
-        addVirtualModule = true;
-
+        
         //1.App常量
         String bundleName = "com.xiaochuankeji.tieba";
         String rootfs = "zuiyou/rootfs";
@@ -28,8 +26,8 @@ public class zuiyou extends BaseAbstractJni {
         String apkPath =  "zuiyou/zuiyou.apk";
         String soName = "libnet_crypto.so";
         String clsName = "com.sina.weibo.security.WeiboSecurityUtils";   //支持.或者 / 分隔。
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
 
+        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
         build(appInfo, null);
 
     }

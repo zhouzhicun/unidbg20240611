@@ -31,7 +31,7 @@ import com.github.unidbg.thread.ThreadDispatcher;
 import com.github.unidbg.thread.UniThreadDispatcher;
 import com.github.unidbg.unix.UnixSyscallHandler;
 import com.github.unidbg.utils.Inspector;
-import com.github.unidbg.zz.ZZConfig;
+import com.github.unidbg.zz.ZZFixConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -103,8 +103,8 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
 
-        if(ZZConfig.fix_processid) {
-            this.pid = ZZConfig.pid;
+        if(ZZFixConfig.fix_processid) {
+            this.pid = ZZFixConfig.pid;
         } else {
             this.pid = Integer.parseInt(pid) & 0x7fff;
         }

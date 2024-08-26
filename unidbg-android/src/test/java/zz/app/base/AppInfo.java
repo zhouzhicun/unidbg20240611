@@ -1,6 +1,21 @@
 package zz.app.base;
 
+import com.github.unidbg.file.IOResolver;
+import com.github.unidbg.file.linux.AndroidFileIO;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+
+
 public class AppInfo {
+
+    public enum VirtualModuleName {
+        AndroidModule,
+        JniGraphics,
+        MediaNdkModule
+    }
 
     public boolean is64Bit = true;
     public String bundleName;
@@ -9,6 +24,12 @@ public class AppInfo {
     public String apkPath;
     public String soName;
     public String clsName;
+
+    //复杂配置
+    public List<VirtualModuleName> virtualLibrarys;
+    public List<String> dependLibrarys;
+    public Map<String, String> systemProperties;
+    public List<IOResolver<AndroidFileIO>> ioResolvers;
 
     private String apkBasePath = "unidbg-android/src/test/java/zz/app/";
 
@@ -37,5 +58,24 @@ public class AppInfo {
         }
         this.soName = soName;
         this.clsName = clsName;
+
     }
+
+
+    public void addDependLibrary(List<VirtualModuleName> virtualLibrarys, List<String> dependLibrarys) {
+
+        this.virtualLibrarys = virtualLibrarys;
+
+        //添加librarys的路径前缀
+        if(dependLibrarys != null) {
+            List<String> resultDependLibrarys = new ArrayList<>();
+            for(String libName : dependLibrarys) {
+                libName = apkBasePath +libName;
+                resultDependLibrarys.add(libName);
+            }
+            this.dependLibrarys = resultDependLibrarys;
+        }
+
+    }
+
 }

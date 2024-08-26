@@ -6,7 +6,7 @@ import com.github.unidbg.file.linux.BaseAndroidFileIO;
 import com.github.unidbg.file.linux.StatStructure;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.utils.Inspector;
-import com.github.unidbg.zz.ZZConfig;
+import com.github.unidbg.zz.ZZFixConfig;
 import com.sun.jna.Pointer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,8 +96,8 @@ public class ByteArrayFileIO extends BaseAndroidFileIO {
         stat.st_ino = 1;
 
         //通过开关固定时间戳
-        if(ZZConfig.fix_file_timestamp) {
-            long timestamp = ZZConfig.curTime;
+        if(ZZFixConfig.fix_file_timestamp) {
+            long timestamp = ZZFixConfig.curTime;
             stat.setLastModification(timestamp);
         } else {
             stat.setLastModification(System.currentTimeMillis());
