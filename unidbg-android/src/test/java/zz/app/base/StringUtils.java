@@ -1,9 +1,8 @@
-package com.github.unidbg.zz;
+package zz.app.base;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import javax.xml.bind.DatatypeConverter;
 
 public class StringUtils {
 

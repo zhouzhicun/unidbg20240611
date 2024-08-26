@@ -79,7 +79,7 @@ public class BaseAbstractJni extends AbstractJni {
         vm.setJni(this);
         vm.setVerbose(true);
 
-        //预加載Library
+        //预加載依賴的Library
         preLoadLibrary();
 
         //6.獲取class
@@ -131,13 +131,6 @@ public class BaseAbstractJni extends AbstractJni {
 
     /******************************* helper ****************************************/
 
-    private List<Object> createParams() {
-        List<Object> list = new ArrayList<>(10);
-        list.add(vm.getJNIEnv());   // 第一个参数是env
-        list.add(0);                // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
-        return list;
-    }
-
     //主动调用JNI函数时，所有参数都要调用vm.addLocalObject() 将对象hash添加到list中。
     public Number callJNIFunc(long offset, List<Object> params) {
 
@@ -173,6 +166,16 @@ public class BaseAbstractJni extends AbstractJni {
             }
         }
         return module.callFunction(emulator, offset, resultParams.toArray());
+    }
+
+
+    /******************************* private ****************************************/
+
+    private List<Object> createParams() {
+        List<Object> list = new ArrayList<>(10);
+        list.add(vm.getJNIEnv());   // 第一个参数是env
+        list.add(0);                // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
+        return list;
     }
 
 

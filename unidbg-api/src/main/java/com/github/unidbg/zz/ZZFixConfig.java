@@ -14,4 +14,14 @@ public class ZZFixConfig {
     public static boolean fix_getramdom = true;
     public static boolean fix_processid = true;
 
+    //是否啟用固定所有
+    public static void enableFixAll(boolean enable) {
+        fix_gettimeofday = enable;
+        fix_clock_gettime = enable;
+        fix_file_timestamp = enable;
+        fix_ramdom_file = enable;
+        fix_getramdom = enable;
+        fix_processid = enable;
+    }
+
 }

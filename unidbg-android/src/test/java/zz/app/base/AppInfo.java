@@ -17,21 +17,22 @@ public class AppInfo {
         MediaNdkModule
     }
 
-    public boolean is64Bit = true;
-    public String bundleName;
-    public String rootfs;
-    public String rootsource;
-    public String apkPath;
-    public String soName;
-    public String clsName;
+    private String apkBasePath = "unidbg-android/src/test/java/zz/app/";
 
-    //复杂配置
+    public boolean is64Bit = true;      //是否ARM64
+    public String bundleName;           //apk包名
+    public String rootfs;               //fs根目錄
+    public String rootsource;           //
+    public String apkPath;              //apk路徑
+    public String soName;               //so的名字，支持 libXXX.so， 或者XXX。
+    public String clsName;              //接口類
+
+    //其他配置
     public List<VirtualModuleName> virtualLibrarys;
     public List<String> dependLibrarys;
     public Map<String, String> systemProperties;
     public List<IOResolver<AndroidFileIO>> ioResolvers;
 
-    private String apkBasePath = "unidbg-android/src/test/java/zz/app/";
 
     public AppInfo(boolean is64Bit, String bundleName, String rootfs, String rootsource, String apkPath, String soName, String clsName) {
         this.is64Bit = is64Bit;
