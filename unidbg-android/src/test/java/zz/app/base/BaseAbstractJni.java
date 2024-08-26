@@ -33,7 +33,6 @@ public class BaseAbstractJni extends AbstractJni {
 
     /******************************* build ****************************************/
 
-
     public void build(AppInfo appInfo, AndroidEmulatorBuilder builder) {
 
         this.appInfo = appInfo;
@@ -60,6 +59,8 @@ public class BaseAbstractJni extends AbstractJni {
         }
 
         commonBuild();
+
+        BaseAbstractJniHelper.abstractJni = this;
 
     }
 
@@ -129,7 +130,10 @@ public class BaseAbstractJni extends AbstractJni {
     }
 
 
-    /******************************* helper ****************************************/
+
+
+
+    //******************************* helper ****************************************
 
     //主动调用JNI函数时，所有参数都要调用vm.addLocalObject() 将对象hash添加到list中。
     public Number callJNIFunc(long offset, List<Object> params) {

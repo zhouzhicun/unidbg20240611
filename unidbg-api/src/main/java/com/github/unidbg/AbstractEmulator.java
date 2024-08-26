@@ -422,11 +422,35 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
                 msg = e.getClass().getName();
             }
             RunnableTask runningTask = threadDispatcher.getRunningTask();
-            System.err.println("待补环境 ==> " + msg);
+
+            showTip(msg);
+
             log.warn("emulate {} exception sp={}, msg={}, offset={}ms{}", pointer, getStackPointer(), msg, System.currentTimeMillis() - start,
                     runningTask == null ? "" : (" @ " + runningTask));
         }
         return -1;
+    }
+
+    private void showTip(String msg) {
+        System.err.println("待补环境 ==> " + msg);
+
+        if(msg.contains("->")) {
+           String[] strArr = msg.split("->");
+           String clsName = strArr[0];
+           String ch = "\\(";
+           String methodName = strArr[1].split(ch)[0];
+
+           String frida_fromat =
+                   "Java.use(\"%s\").%s.implementation = function() {\n" +
+                           "  \n" +
+                           "}";
+           String fridaCode =  String.format(frida_fromat, clsName, methodName);
+           System.err.println("frida hook代码: \n" + fridaCode);
+
+        } else {
+            System.err.println("frida hook代码待完善！！！");
+        }
+
     }
 
     public abstract Pointer getStackPointer();

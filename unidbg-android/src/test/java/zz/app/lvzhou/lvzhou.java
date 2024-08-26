@@ -28,10 +28,13 @@ public class lvzhou extends BaseAbstractJni {
 
     public static void main(String[] args) {
         lvzhou test = new lvzhou();
+
         System.err.println("sign = " + test.getS());
     }
 
     public String getS(){
+
+        addBreakPoint();
 
         // arg3 bytes
         String input = "aid=01A-khBWIm48A079Pz_DMW6PyZR8" +
@@ -51,6 +54,11 @@ public class lvzhou extends BaseAbstractJni {
         Number number = callJNIFunc(0xC365, list);
         String result = vm.getObject(number.intValue()).getValue().toString();
         return result;
+    }
+
+
+    public void addBreakPoint() {
+        emulator.attach().addBreakPoint(module, 0x8AB2 + 1);  //arm32需要+1
     }
 
 }

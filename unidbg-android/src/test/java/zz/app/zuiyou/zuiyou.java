@@ -7,6 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import zz.app.base.AppInfo;
 import zz.app.base.BaseAbstractJni;
+import zz.app.base.BaseAbstractJniHelper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class zuiyou extends BaseAbstractJni {
 
     zuiyou() {
-        
+
         //1.App常量
         String bundleName = "com.xiaochuankeji.tieba";
         String rootfs = "zuiyou/rootfs";
@@ -86,7 +87,7 @@ public class zuiyou extends BaseAbstractJni {
     public DvmObject<?> callStaticObjectMethodV(BaseVM vm, DvmClass dvmClass, String signature, VaList vaList) {
         switch (signature) {
             case "com/izuiyou/common/base/BaseApplication->getAppContext()Landroid/content/Context;":
-                return vm.resolveClass("android/content/Context").newObject(null);
+                return BaseAbstractJniHelper.getContext();
         }
         return super.callStaticObjectMethodV(vm, dvmClass, signature, vaList);
     }
@@ -114,16 +115,18 @@ public class zuiyou extends BaseAbstractJni {
 
     @Override
     public DvmObject<?> callObjectMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
+        String clsName = dvmObject.getObjectType().getClassName();
+        System.out.println("clsName=" + clsName);
         switch (signature) {
             case "android/content/Context->getClass()Ljava/lang/Class;":{
-                return dvmObject.getObjectType();
+                return BaseAbstractJniHelper.getClass(dvmObject);
             }
             case "java/lang/Class->getSimpleName()Ljava/lang/String;":{
                 return new StringObject(vm, "AppController");
             }
             case "android/content/Context->getFilesDir()Ljava/io/File;":
             case "java/lang/String->getAbsolutePath()Ljava/lang/String;": {
-                return new StringObject(vm, "/data/user/0/cn.xiaochuankeji.tieba/files");
+                return BaseAbstractJniHelper.getAppFilesDir();
             }
         }
         return super.callObjectMethodV(vm, dvmObject, signature, vaList);
