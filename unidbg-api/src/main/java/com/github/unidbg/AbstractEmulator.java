@@ -442,9 +442,9 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
 
            String frida_fromat =
                    "Java.use(\"%s\").%s.implementation = function() {\n" +
-                           "  \n" +
+                           "    ret = this.%s() \n" +
                            "}";
-           String fridaCode =  String.format(frida_fromat, clsName, methodName);
+           String fridaCode =  String.format(frida_fromat, clsName, methodName, methodName);
            System.err.println("frida hook代码: \n" + fridaCode);
 
         } else {

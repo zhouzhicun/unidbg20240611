@@ -788,4 +788,10 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         return 0;
     }
 
+    protected void logFile(String funcName, String fileName) {
+        String msg = String.format("[%s] fileName = %s", funcName, fileName);
+        System.err.println(msg);
+    }
+
+
 }

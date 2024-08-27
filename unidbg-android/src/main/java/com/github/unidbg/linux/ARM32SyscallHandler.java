@@ -707,6 +707,8 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         Pointer times = UnidbgPointer.register(emulator, ArmConst.UC_ARM_REG_R1);
         if (log.isDebugEnabled()) {
             log.debug("utimes filename={}, times={}", filename.getString(0), times);
+            logFile("utimes", filename.getString(0));
+
         }
         return 0;
     }
@@ -718,6 +720,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         int flags = backend.reg_read(ArmConst.UC_ARM_REG_R3).intValue();
         if (log.isDebugEnabled()) {
             log.debug("utimensat dirfd={}, pathname={}, times={}, flags={}", dirfd, pathname.getString(0), times, flags);
+            logFile("utimensat", pathname.getString(0));
         }
         return 0;
     }
@@ -1003,6 +1006,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         }
 
         String path = pathname.getString(0);
+        logFile("access", path);
         if (log.isDebugEnabled()) {
             log.debug("access pathname={}, mode={}", path, mode);
         }
@@ -1096,6 +1100,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("stat64 pathname={}, statbuf={}", path, statbuf);
         }
+        logFile("stat64", path);
         return stat64(emulator, path, statbuf);
     }
 
@@ -1106,6 +1111,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("lstat pathname={}, statbuf={}", path, statbuf);
         }
+        logFile("lstat", path);
         return stat64(emulator, path, statbuf);
     }
 
@@ -1116,6 +1122,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         }
 
         log.info("stat64 pathname={}, LR={}", pathname, emulator.getContext().getLRPointer());
+        logFile("stat64", pathname);
         emulator.getMemory().setErrno(result != null ? result.errno : UnixEmulator.ENOENT);
         return -1;
     }
@@ -1302,6 +1309,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("mkdir pathname={}, mode={}", pathname.getString(0), mode);
         }
+        logFile("mkdir", pathname.getString(0));
         emulator.getMemory().setErrno(UnixEmulator.EACCES);
         return -1;
     }
@@ -1858,6 +1866,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         int mode = backend.reg_read(ArmConst.UC_ARM_REG_R3).intValue();
         String pathname = pathname_p.getString(0);
         String msg = "faccessat dirfd=" + dirfd + ", pathname=" + pathname + ", oflags=0x" + Integer.toHexString(oflags) + ", mode=0x" + Integer.toHexString(mode);
+        logFile("faccessat", pathname);
         if (log.isDebugEnabled()) {
             log.debug(msg);
         }
@@ -1887,6 +1896,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("fstatat64 dirfd={}, pathname={}, statbuf={}, flags={}", dirfd, path, statbuf, flags);
         }
+        logFile("fstatat64", path);
         if (dirfd != IO.AT_FDCWD && !path.startsWith("/")) {
             throw new BackendException();
         }
@@ -1900,6 +1910,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         int oflags = context.getIntArg(2);
         int mode = context.getIntArg(3);
         String pathname = pathname_p.getString(0);
+        logFile("openat", pathname);
         log.debug("openat dirfd={}, pathname={}, oflags=0x{}, mode={}", dirfd, pathname, Integer.toHexString(oflags), Integer.toHexString(mode));
         pathname = FilenameUtils.normalize(pathname, true);
         if ("/data/misc/zoneinfo/current/tzdata".equals(pathname) || "/dev/pmsg0".equals(pathname)) {
@@ -1921,6 +1932,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
 
             int fd = open(emulator, pathname, oflags);
             if (fd == -1) {
+
                 log.info("openat AT_FDCWD dirfd={}, pathname={}, oflags=0x{}, mode={}", dirfd, pathname, Integer.toHexString(oflags), Integer.toHexString(mode));
                 return -emulator.getMemory().getLastErrno();
             } else {
@@ -1936,6 +1948,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         int mode = context.getIntArg(2);
         String pathname = pathname_p.getString(0);
         String msg = "open pathname=" + pathname + ", oflags=0x" + Integer.toHexString(oflags) + ", mode=" + Integer.toHexString(mode) + ", from=" + UnidbgPointer.register(emulator, ArmConst.UC_ARM_REG_LR);
+        logFile("open", pathname);
         if (log.isDebugEnabled()) {
             log.debug(msg);
         }

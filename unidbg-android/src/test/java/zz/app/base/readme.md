@@ -1,20 +1,24 @@
 
-1.构造函数调用：
 
-```
-//构造参数，需要转换为unidbg DvmObject类型, 例如StringObject, ByteArray等。
-StringObject param1 = new StringObject(vm, "12345");
-ByteArray param2 = new ByteArray(vm, "r0ysue".getBytes(StandardCharsets.UTF_8));
-
-//添加到list时，需要调用vm.addLocalObject()， 相当于将DvmObject类型转换为对象句柄，
-List<Object> params = createParams();
-params.add(vm.addLocalObject(param1));
-params.add(vm.addLocalObject(param2));
-Number number = callFunc(0x4a28D, params);
-
-```
+文件访问最主要服务于环境检测和信息收集，举例如下。
+● 访问 /proc/self/maps 检测 frida/xposed 等模块
+● 访问 /proc/net/tcp 检测 frida/ida server 默认端口
+● 访问 /proc/self/cmdline 确认在自身进程内
+● 访问 apkfile 做签名校验，解析资源文件等等
+● 访问 /xbin/su 检测 root
+● 访问 /data/data/package/xxx 读取自身相关文件
+Unidbg 通过文件处理器处理文件。默认的文件处理器是 AndroidResolver，我们可以在它的 resolve 方法里处理样本所发起的文件访问。
 
 
-2.补环境
-直接返回 unidbg DvmObject类型即可, 例如StringObject, ByteArray等。
+
+当样本做环境检测相关的文件访问时，主要检测这些文件是否存在，以及是否有权限
+● Root检测（检测 su、Magisk、Riru，检测市面上的 Root 工具）
+● 模拟器检测（检测 Qemu，检测各家模拟器，比如夜神、雷电、Mumu 等模拟器的文件特征、驱动特征等）
+● 危险应用检测（各类多开助手、按键精灵、接码平台等）
+● 云手机检测 （以各种云手机产品为主）
+● Hook框架（以 Xposed、Substrate、Frida 为主）
+● 脱壳机（以 Fart、DexHunter、Youpk 三者为主）
+
+
+
 

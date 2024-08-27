@@ -6,6 +6,9 @@ import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.file.IOResolver;
 import com.github.unidbg.file.linux.AndroidFileIO;
+import com.github.unidbg.linux.ARM32SyscallHandler;
+import com.github.unidbg.linux.ARM64SyscallHandler;
+import com.github.unidbg.linux.AndroidSyscallHandler;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.SystemPropertyHook;
@@ -17,6 +20,10 @@ import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
 import com.github.unidbg.virtualmodule.android.MediaNdkModule;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import zz.app.base.files.AppProcFile;
+
 import java.io.File;
 
 import java.util.ArrayList;
@@ -25,11 +32,11 @@ import java.util.List;
 
 public class BaseAbstractJni extends AbstractJni {
 
-    protected AppInfo appInfo;
-    protected AndroidEmulator emulator;
-    protected VM vm;
-    protected Module module;
-    protected DvmClass nativeAPI;
+    public AppInfo appInfo;
+    public AndroidEmulator emulator;
+    public VM vm;
+    public Module module;
+    public DvmClass nativeAPI;
 
     /******************************* build ****************************************/
 
@@ -60,7 +67,9 @@ public class BaseAbstractJni extends AbstractJni {
 
         commonBuild();
 
+        //更新全局变量
         BaseAbstractJniHelper.abstractJni = this;
+        AppProcFile.updatePid();
 
     }
 
@@ -134,6 +143,16 @@ public class BaseAbstractJni extends AbstractJni {
 
 
     //******************************* helper ****************************************
+
+    //启用日志
+    public void enableLog() {
+        if (appInfo.is64Bit) {
+            Logger.getLogger(ARM64SyscallHandler.class).setLevel(Level.DEBUG);
+        } else {
+            Logger.getLogger(ARM32SyscallHandler.class).setLevel(Level.DEBUG);
+        }
+        Logger.getLogger(AndroidSyscallHandler.class).setLevel(Level.DEBUG);
+    }
 
     //主动调用JNI函数时，所有参数都要调用vm.addLocalObject() 将对象hash添加到list中。
     public Number callJNIFunc(long offset, List<Object> params) {

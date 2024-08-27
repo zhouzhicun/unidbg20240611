@@ -1,4 +1,4 @@
-package zz.app.base;
+package zz.app.base.files;
 
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.linux.AndroidFileIO;
@@ -37,6 +37,5 @@ public class IOResolverUtil {
         }
         return localFile;
     }
-
 
 }
