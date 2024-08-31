@@ -469,7 +469,14 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
             //补方法
             //判断方法是否为构造函数, 是则直接返回。
             if(info.contains("<init>")) {
-                System.err.println("构造函数，不需要生成frida代码");
+                System.err.println("init函数，直接补个return即可");
+                return;
+            }
+            if(info.equals("allocObject")) {
+                String tip = "alloc函数，直接返回以下即可：\n" +
+                        "JDK类库对象，如 HashMap、JSONObject 等，使用：ProxyDvmObject.createObject(vm, new XXX()); \n" +
+                        "非JDK类库对象，如 Android Context、SharedPreference等，使用：dvmClass.newObject(new XXX());";
+                System.err.println(tip);
                 return;
             }
 
