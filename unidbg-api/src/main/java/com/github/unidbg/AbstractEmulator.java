@@ -51,6 +51,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * abstract emulator
@@ -423,7 +425,7 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
             }
             RunnableTask runningTask = threadDispatcher.getRunningTask();
 
-            showTip(msg);
+            showMethodInfo(msg);
 
             log.warn("emulate {} exception sp={}, msg={}, offset={}ms{}", pointer, getStackPointer(), msg, System.currentTimeMillis() - start,
                     runningTask == null ? "" : (" @ " + runningTask));
@@ -431,25 +433,98 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
         return -1;
     }
 
-    private void showTip(String msg) {
+    private void showMethodInfo(String msg) {
+
+        if(msg == null || msg.isEmpty()) {
+            return;
+        }
         System.err.println("待补环境 ==> " + msg);
 
-        if(msg.contains("->")) {
-           String[] strArr = msg.split("->");
-           String clsName = strArr[0];
-           String ch = "\\(";
-           String methodName = strArr[1].split(ch)[0];
+        //方法： "com/bilibili/nativelibrary/SignedQuery-><init>(Ljava/lang/String;Ljava/lang/String;)V"
+        //字段： "android/content/pm/PackageInfo->versionName:Ljava/lang/String;"
+//        msg = "com/bilibili/nativelibrary/SignedQuery->hello(Ljava/lang/String;Ljava/lang/String;)V";
+//        msg = "android/content/pm/PackageInfo->versionName:Ljava/lang/String;";
 
-           String frida_fromat =
-                   "Java.use(\"%s\").%s.implementation = function() {\n" +
-                           "    ret = this.%s() \n" +
-                           "}";
-           String fridaCode =  String.format(frida_fromat, clsName, methodName, methodName);
-           System.err.println("frida hook代码: \n" + fridaCode);
+        //判断是否包含"->"
+        if(!msg.contains("->")) {
+            System.err.println("异常情况，待确定");
+            return;
+        }
+
+        String[] strArr = msg.split("->");  //按照"->"拆分
+        String clsName = strArr[0];
+        String info = strArr[1];
+
+        if (info.contains(":")) {
+            //补字段
+            //生成frida字段
+            String fieldName = info.split(":")[0];
+            String frida_fromat =
+                    "let %s = Java.use(\"%s\").%s.value\n" +
+                    "console.log('result = ' + %s);\n";
+            String fridaCode = String.format(frida_fromat, fieldName, clsName, fieldName, fieldName);
+            System.err.println("frida hook代码（静态字段）: \n" + fridaCode);
 
         } else {
-            System.err.println("frida hook代码待完善！！！");
+            //补方法
+            //判断方法是否为构造函数, 是则直接返回。
+            if(info.contains("<init>")) {
+                System.err.println("构造函数，不需要生成frida代码");
+                return;
+            }
+
+            //解析方法名和参数个数
+            String methodName = strArr[1].split("\\(")[0];
+
+            // 正则表达式，用于匹配括号内的参数内容
+            String regex = "\\(([^)]*)\\)";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(strArr[1]);
+            int paramCount = 0;
+            if (matcher.find()) {
+                String paramStr = matcher.group(1);
+                if(!paramStr.isEmpty()) {
+                    String[] params = paramStr.split(";");
+                    paramCount = params.length;
+                }
+            }
+
+            //构造参数列表
+            String params1 = "";
+            String params2 = "";
+            if (paramCount > 0) {
+                for (int i = 0; i < paramCount; i++) {
+                    //拼接params1
+                    params1 += String.format("a%d: any", i);
+                    if (i != paramCount - 1) {
+                        params1 += ", ";
+                    }
+
+                    //拼接params2
+                    params2 += String.format("a%d", i);
+                    if (i != paramCount - 1) {
+                        params2 += ", ";
+                    }
+                }
+            }
+
+            //生成frida代码
+            String frida_fromat =
+                    "Java.use(\"%s\").%s.implementation = function(%s) {\n" +
+                            "    result = this.%s(%s) \n" +
+                            "    console.log('result = ' + result)\n" +
+                            "    return result\n" +
+                            "}";
+            String fridaCode =  String.format(frida_fromat, clsName, methodName, params1, methodName, params2);
+            System.err.println("frida hook代码（Java方法）: \n" + fridaCode);
+
+
         }
+
+
+
+
+
 
     }
 

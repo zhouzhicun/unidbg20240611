@@ -105,9 +105,9 @@ public class zuiyou extends BaseAbstractJni {
     @Override
     public int callStaticIntMethodV(BaseVM vm, DvmClass dvmClass, String signature, VaList vaList) {
         switch (signature){
-//            case "android/os/Process->myPid()I":{
-//                return emulator.getPid();
-//            }
+            case "android/os/Process->myPid()I":{
+                return emulator.getPid();
+            }
         }
         throw new UnsupportedOperationException(signature);
     }
