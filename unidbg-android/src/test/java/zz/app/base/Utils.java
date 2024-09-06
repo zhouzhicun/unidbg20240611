@@ -2,6 +2,7 @@ package zz.app.base;
 
 
 import com.github.unidbg.Emulator;
+import com.github.unidbg.Module;
 import com.github.unidbg.arm.Arm64Svc;
 import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.arm.backend.ReadHook;
@@ -14,20 +15,22 @@ import keystone.Keystone;
 import keystone.KeystoneArchitecture;
 import keystone.KeystoneMode;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
 public class Utils {
 
-    static void hookSVC(Emulator<?> emulator) {
-
-        SvcMemory svcMemory = emulator.getSvcMemory();
-        svcMemory.registerSvc(new Arm64Svc() {
-            @Override
-            public long handle(Emulator<?> emulator) {
-                RegisterContext context = emulator.getContext();
-                int svcNumber = context.getIntArg(7);
-                System.out.println("Hit custom SVC number: " + svcNumber);
-                return 0;
-            }
-        });
+    //trace指令到文件中
+    void trace(Emulator<?> emulator, Module module, String traceFile) {
+        try {
+            FileOutputStream fileStream = new FileOutputStream(traceFile);
+            PrintStream traceStream = new PrintStream(fileStream);
+            emulator.traceCode(module.base, module.base + module.size).setRedirect(traceStream);
+        } catch (FileNotFoundException e) {
+            //e.printStackTrace();
+            System.out.println("file not found: " + traceFile);
+        }
     }
 
 
@@ -49,6 +52,22 @@ public class Utils {
     }
 
 
+    //hook svc系统调用
+    static void hookSVC(Emulator<?> emulator) {
+
+        SvcMemory svcMemory = emulator.getSvcMemory();
+        svcMemory.registerSvc(new Arm64Svc() {
+            @Override
+            public long handle(Emulator<?> emulator) {
+                RegisterContext context = emulator.getContext();
+                int svcNumber = context.getIntArg(7);
+                System.out.println("Hit custom SVC number: " + svcNumber);
+                return 0;
+            }
+        });
+    }
+
+    //Hook 内存读写访问
     static void hookMemoryAccess(Emulator<?> emulator, long beginAddr, long endAddr) {
 
         emulator.getBackend().hook_add_new(new ReadHook() {
