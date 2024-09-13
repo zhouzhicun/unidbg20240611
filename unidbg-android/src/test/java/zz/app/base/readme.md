@@ -22,3 +22,17 @@ Unidbg 通过文件处理器处理文件。默认的文件处理器是 AndroidRe
 
 
 
+
+获取 uname信息：（我们可以在 adb shell 中获取除了 domainname 之外的信息。）
+uname --help
+usage: uname [-asnrvm]
+Print system information.
+-s      System name
+-n      Network (domain) name
+-r      Kernel Release number
+-v      Kernel Version
+-m      Machine (hardware) name
+-a      All of the above
+
+
+
