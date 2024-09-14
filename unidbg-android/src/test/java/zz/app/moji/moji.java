@@ -1,9 +1,13 @@
 package zz.app.moji;
 
+import com.github.unidbg.Emulator;
+import com.github.unidbg.Module;
+import com.github.unidbg.ModuleListener;
 import com.github.unidbg.linux.android.dvm.*;
 import com.github.unidbg.linux.android.dvm.array.ByteArray;
 import zz.app.base.AppInfo;
 import zz.app.base.BaseAbstractJni;
+import zz.app.base.Utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,25 +19,38 @@ public class moji extends BaseAbstractJni {
     moji() {
 
         //1.App常量
+        String projectName = "moji";
+        String apkFileName = "moji.apk";
         String bundleName = "com.moji.mjweather";
-        String rootfs = "moji/rootfs";
-        String rootresource = "moji/resource";
-        String apkPath =  "moji/moji.apk";
         String soName = "encrypt";
         String clsName = "com.moji.mjweather.library.Digest";
 
-        AppInfo appInfo = new AppInfo(true, bundleName, rootfs, rootresource, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(true, projectName, apkFileName, bundleName, soName, clsName);
+
+        //添加模块加载监听器
+        appInfo.moduleListener = new ModuleListener() {
+            @Override
+            public void onLoaded(Emulator<?> emulator, Module module) {
+                if(module.name.contains("signer")){
+                    emulator.traceCode(module.base, module.base+module.size);
+                }
+            }
+        };
+
         build(appInfo, null);
 
     }
 
     public static void main(String[] args) {
         moji test = new moji();
-
         System.err.println("sign = " + test.call_sign());
     }
 
     public String call_sign() {
+
+        String traceFile = appInfo.outputfs + "/hehe.log";
+        Utils.traceCode(emulator, module, traceFile, true);
+
         System.err.println("开始 call sign: ");
         // arg3 bytes
         String input = "{\"common\":{\"platform\":\"Android\",\"identifier\":\"\",\"app_version\":\"1009087802\",\"os_version\":\"31\",\"device\":\"Pixel 4\",\"brand\":\"google\",\"pid\":\"5068\",\"language\":\"CN\",\"uid\":\"968403975009353785\",\"uaid\":\"968403975172931586\",\"width\":1080,\"height\":2236,\"package_name\":\"com.moji.mjweather\",\"amp\":\"1725432467598\",\"locationcity\":1,\"current_city\":33,\"token\":\"0b3d96327296374be7af09cf92d92295\",\"vip\":\"0\",\"weather_tab_style\":0,\"giuid\":\"gtc_97da812cf686a7a19d79e40fc4b97d8232\",\"smid\":\"DUwXaIhvLQDepEEOAgqF5yLJ-5V4vD8Dpk86\",\"security_request\":0,\"net\":\"wifi\"},\"params\":{\"mobile\":\"EdiOaYg8uVwFTpYfiKiFOg==\",\"is_sercret\":1}}";

@@ -21,14 +21,12 @@ public class zuiyou extends BaseAbstractJni {
     zuiyou() {
 
         //1.App常量
+        String projectName = "zuiyou";
+        String apkFileName =  "zuiyou.apk";
         String bundleName = "com.xiaochuankeji.tieba";
-        String rootfs = "zuiyou/rootfs";
-        String rootresource = "zuiyou/resource";
-        String apkPath =  "zuiyou/zuiyou.apk";
         String soName = "libnet_crypto.so";
         String clsName = "com.sina.weibo.security.WeiboSecurityUtils";   //支持.或者 / 分隔。
-
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, projectName, apkFileName, bundleName, soName, clsName);
         build(appInfo, null);
 
     }

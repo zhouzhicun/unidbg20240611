@@ -15,27 +15,60 @@ import keystone.Keystone;
 import keystone.KeystoneArchitecture;
 import keystone.KeystoneMode;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Utils {
 
+    public static String curTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+        String formattedDateTime = now.format(formatter);
+        return formattedDateTime;
+    }
+
+    //创建文件
+    public static void createFile(String filePath) {
+
+        File file = new File(filePath);
+        try {
+            //如果文件已存在，则先删除。
+            if (file.exists()) {
+                file.delete();
+            }
+            //创建新文件
+            file.createNewFile();
+
+        } catch (IOException e) {
+            System.out.println("文件创建失败。");
+            e.printStackTrace();
+        }
+    }
+
     //trace指令到文件中
-    void trace(Emulator<?> emulator, Module module, String traceFile) {
+    public static void traceCode(Emulator<?> emulator, Module module, String traceFile, boolean traceRW) {
+
+        createFile(traceFile);
+
         try {
             FileOutputStream fileStream = new FileOutputStream(traceFile);
             PrintStream traceStream = new PrintStream(fileStream);
             emulator.traceCode(module.base, module.base + module.size).setRedirect(traceStream);
+            if (traceRW) {
+                emulator.traceRead().setRedirect(traceStream);
+                emulator.traceWrite().setRedirect(traceStream);
+            }
+
         } catch (FileNotFoundException e) {
             //e.printStackTrace();
-            System.out.println("file not found: " + traceFile);
+            System.err.println("file not found: " + traceFile);
         }
     }
 
 
     //patch: 例如：hexcode = [0xd0, 0x1a, 0xaa, 0x20]
-    static void patchCode(Emulator<?> emulator, long addr, String machineHexCode) {
+    public static void patchCode(Emulator<?> emulator, long addr, String machineHexCode) {
 
         UnidbgPointer pointer = UnidbgPointer.pointer(emulator, addr);
         byte[] bytes = StringUtils.hexToBytes(machineHexCode);
@@ -43,7 +76,7 @@ public class Utils {
     }
 
     //patch：例如：asmCode = "subs r0, r2, r3";
-    static void patchASM(Emulator<?> emulator, long addr, String asmCode) {
+    public static void patchASM(Emulator<?> emulator, long addr, String asmCode) {
 
         UnidbgPointer pointer = UnidbgPointer.pointer(emulator, addr);
         Keystone keystone = new Keystone(KeystoneArchitecture.Arm64, KeystoneMode.LittleEndian);
@@ -53,7 +86,7 @@ public class Utils {
 
 
     //hook svc系统调用
-    static void hookSVC(Emulator<?> emulator) {
+    public static void hookSVC(Emulator<?> emulator) {
 
         SvcMemory svcMemory = emulator.getSvcMemory();
         svcMemory.registerSvc(new Arm64Svc() {
@@ -68,7 +101,7 @@ public class Utils {
     }
 
     //Hook 内存读写访问
-    static void hookMemoryAccess(Emulator<?> emulator, long beginAddr, long endAddr) {
+    public static void hookMemoryAccess(Emulator<?> emulator, long beginAddr, long endAddr) {
 
         emulator.getBackend().hook_add_new(new ReadHook() {
             @Override

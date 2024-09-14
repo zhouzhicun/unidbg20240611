@@ -92,6 +92,11 @@ public class BaseAbstractJni extends AbstractJni {
         //预加載依賴的Library
         preLoadLibrary();
 
+        //添加moduleListener
+        if(appInfo.moduleListener != null) {
+            memory.addModuleListener(appInfo.moduleListener);
+        }
+
         //6.獲取class
         DalvikModule dm = vm.loadLibrary(appInfo.soName, true);
         module = dm.getModule();

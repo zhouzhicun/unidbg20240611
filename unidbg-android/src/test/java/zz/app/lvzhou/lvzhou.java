@@ -14,14 +14,12 @@ public class lvzhou extends BaseAbstractJni {
     lvzhou() {
 
         //1.App常量
+        String projectName = "lvzhou";
+        String apkFileName =  "lvzhou.apk";
         String bundleName = "com.sina.oasis";
-        String rootfs = "lvzhou/rootfs";
-        String rootresource = "lvzhou/resource";
-        String apkPath =  "lvzhou/lvzhou.apk";
         String soName = "oasiscore";
         String clsName = "com/sina/weibo/security/WeiboSecurityUtils";
-
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, projectName, apkFileName, bundleName, soName, clsName);
         build(appInfo, null);
 
     }

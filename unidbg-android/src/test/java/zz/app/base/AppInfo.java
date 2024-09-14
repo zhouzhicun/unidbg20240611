@@ -1,5 +1,6 @@
 package zz.app.base;
 
+import com.github.unidbg.ModuleListener;
 import com.github.unidbg.file.IOResolver;
 import com.github.unidbg.file.linux.AndroidFileIO;
 
@@ -19,39 +20,42 @@ public class AppInfo {
 
     private String apkBasePath = "unidbg-android/src/test/java/zz/app/";
 
-    public boolean is64Bit = true;      //是否ARM64
-    public String bundleName;           //apk包名
-    public String rootfs;               //fs根目錄
-    public String rootsource;           //
-    public String apkPath;              //apk路徑
+    //是否ARM64
+    public boolean is64Bit = true;
+
+    public String projectName;          //unidbg工程名
+    public String apkPath;          //apk文件名
+    public String bundleName;           //app包名
     public String soName;               //so的名字，支持 libXXX.so， 或者XXX。
     public String clsName;              //接口類
+
+    //相关目录
+    public String rootfs;               //fs根目錄
+    public String resourcefs;             //
+    public String outputfs;             //trace或其他输出目录
+
 
     //其他配置
     public List<VirtualModuleName> virtualLibrarys;
     public List<String> dependLibrarys;
     public Map<String, String> systemProperties;
     public List<IOResolver<AndroidFileIO>> ioResolvers;
+    public ModuleListener moduleListener;
 
-
-    public AppInfo(boolean is64Bit, String bundleName, String rootfs, String rootsource, String apkPath, String soName, String clsName) {
+    public AppInfo(boolean is64Bit, String projectName, String apkFileName, String bundleName, String soName, String clsName) {
         this.is64Bit = is64Bit;
+
+        this.projectName = projectName;
         this.bundleName = bundleName;
 
-        if(rootfs != null && !rootfs.isEmpty()) {
-            this.rootfs = apkBasePath + rootfs;
-        } else {
-            this.rootfs = null;
-        }
+        this.apkPath = String.format("%s/%s/%s", apkBasePath, projectName, apkFileName);
 
-        if(rootsource != null && !rootsource.isEmpty()) {
-            this.rootsource = apkBasePath + rootsource;
-        } else {
-            this.rootsource = null;
-        }
+        //目录
+        this.rootfs = String.format("%s/%s/rootfs", apkBasePath, projectName);
+        this.resourcefs = String.format("%s/%s/source", apkBasePath, projectName);
+        this.outputfs = String.format("%s/%s/output", apkBasePath, projectName);
 
 
-        this.apkPath = apkBasePath + apkPath;
 
         if(soName.startsWith("lib") || soName.endsWith(".so")) {
             soName = soName.replace(".so", "");
@@ -63,6 +67,7 @@ public class AppInfo {
     }
 
 
+    //依赖的so库都放在 resource目录下.
     public void addDependLibrary(List<VirtualModuleName> virtualLibrarys, List<String> dependLibrarys) {
 
         this.virtualLibrarys = virtualLibrarys;
@@ -71,7 +76,7 @@ public class AppInfo {
         if(dependLibrarys != null) {
             List<String> resultDependLibrarys = new ArrayList<>();
             for(String libName : dependLibrarys) {
-                libName = apkBasePath +libName;
+                libName = String.format("%s/%s", this.resourcefs, libName);
                 resultDependLibrarys.add(libName);
             }
             this.dependLibrarys = resultDependLibrarys;

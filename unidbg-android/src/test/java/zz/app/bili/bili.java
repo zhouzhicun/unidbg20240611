@@ -13,14 +13,12 @@ public class bili extends BaseAbstractJni {
     bili() {
 
         //1.App常量
+        String projectName = "bili";
+        String apkFileName =  "bilibili.apk";
         String bundleName = "tv.danmaku.bili";
-        String rootfs = "bili/rootfs";
-        String rootresource = "bili/resource";
-        String apkPath =  "bili/bilibili.apk";
         String soName = "bili";
         String clsName = "com.bilibili.nativelibrary.LibBili";
-
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, projectName, apkFileName, bundleName, soName, clsName);
         build(appInfo, null);
 
     }

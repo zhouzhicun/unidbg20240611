@@ -21,14 +21,12 @@ public class dianping extends BaseAbstractJni {
     dianping() {
 
         //1.App常量
+        String projectName = "dianping";
+        String apkFileName =  "dianping.apk";
         String bundleName = "com.dianping.v1";
-        String rootfs = "dianping/rootfs";
-        String rootresource = "dianping/resource";
-        String apkPath =  "dianping/dianping.apk";
         String soName = "mtguard";
         String clsName = "com/meituan/android/common/mtguard/NBridge$SIUACollector";
-
-        AppInfo appInfo = new AppInfo(false, bundleName, rootfs, rootresource, apkPath, soName, clsName);
+        AppInfo appInfo = new AppInfo(false, projectName, apkFileName, bundleName, soName, clsName);
 
         List<AppInfo.VirtualModuleName> virtualModules = new ArrayList<>();
         virtualModules.add(AppInfo.VirtualModuleName.AndroidModule);
