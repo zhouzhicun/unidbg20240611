@@ -1,0 +1,57 @@
+
+/**
+* 代码来源：https://www.yuque.com/lilac-2hqvv/rgvr95/xkuidkkwxox0t68u
+* 如何使用：
+打开 010Editor -> 脚本 -> 打开脚本 -> 选择我们的脚本 -> 点击运行。
+*/
+
+int md5[4] = {0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee};
+int sha1[4] = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
+int sha256[4] = {0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5};
+int sm3[2] = {0x79cc4519, 0x7a879d8a};
+int crc32[2] = {0x77073096, 0xEE0E612C};
+int chacha20[2] = {0x61707865, 0x3320646e};
+int hmac[2] = {0x36363636, 0x5C5C5C5C};
+int tea[1] = {0x9e3779b9};
+int twofish[4] = {0xBCBC3275, 0xECEC21F3, 0x202043C6, 0xB3B3C9F4};
+int salsa20[4] = {0x61707865, 0x3320646e, 0x79622d32, 0x6b206574};
+int blowfish[2] = {0x243f6a88, 0x85a308d3};
+int rc6[2] = {0xb7e15163, 0x9e3779b9};
+int aes[2] = {0xC66363A5, 0xF87C7C84};
+int aplib[1] = {0x32335041};
+void search(int arr[], string name){
+    int num = sizeof(arr)/sizeof(arr[0]);
+    local int i;
+    local string s;
+    local uchar exist = false;
+    for( i = 0; i < num; i++ ){
+        SPrintf(s, "%X", arr[i]);
+        if(FindFirst(s, false) > 0){
+            exist = true;
+            break;
+        }
+    }
+    if(exist){
+        Printf("Find "+name +", num:0x"+s+"\n");
+    }
+}
+
+
+
+
+Printf("***********Findcrypt Search Start****************\n");
+search(md5, "MD5");
+search(sha1, "SHA1");
+search(sha256, "SHA256");
+search(sm3, "sm3");
+search(crc32, "crc32");
+search(chacha20, "chacha20");
+search(hmac, "hmac");
+search(tea, "tea");
+search(twofish,"twofish");
+search(salsa20, "salsa20");
+search(blowfish, "blowfish");
+search(rc6,"rc6");
+search(aes,"aes");
+search(aplib,"aplib");
+Printf("***********Findcrypt Search Over****************\n");
